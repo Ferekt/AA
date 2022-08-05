@@ -1,0 +1,21 @@
+handle_crash: Program crashed with signal 11
+Dumping the backtrace. Please include this when reporting the bug on https://github.com/godotengine/godot/issues
+[1] /lib/x86_64-linux-gnu/libc.so.6(+0x42520) [0x7f041c0d0520] (??:0)
+[2] /lib/x86_64-linux-gnu/libc.so.6(free+0x1e) [0x7f041c13347e] (??:0)
+[3] /home/elemelon/Desktop/godot_source/modules/GodotSharedMemory/libtorch/lib/libtorch_cpu.so(+0x107dfac0) [0x7f042effdac0] (??:0)
+[4] /lib/x86_64-linux-gnu/libc.so.6(__cxa_finalize+0xb6) [0x7f041c0d3a56] (??:0)
+[5] /home/elemelon/Desktop/godot_source/modules/GodotSharedMemory/libtorch/lib/libtorch_cpu.so(+0x114a0d3) [0x7f041f9680d3] (??:0)
+-- END OF BACKTRACE --
+libGL error: failed to create dri screen
+libGL error: failed to load driver: nouveau
+handle_crash: Program crashed with signal 11
+Dumping the backtrace. Please include this when reporting the bug on https://github.com/godotengine/godot/issues
+[1] /lib/x86_64-linux-gnu/libc.so.6(+0x42520) [0x7f041c0d0520] (??:0)
+[2] /lib/x86_64-linux-gnu/libc.so.6(free+0x1e) [0x7f041c13347e] (??:0)
+[3] /home/elemelon/Desktop/godot_source/modules/GodotSharedMemory/libtorch/lib/libtorch_cpu.so(+0x107dfac0) [0x7f042effdac0] (??:0)
+[4] /lib/x86_64-linux-gnu/libc.so.6(__cxa_finalize+0xb6) [0x7f041c0d3a56] (??:0)
+[5] /home/elemelon/Desktop/godot_source/modules/GodotSharedMemory/libtorch/lib/libtorch_cpu.so(+0x114a0d3) [0x7f041f9680d3] (??:0)
+-- END OF BACKTRACE --
+ERROR: set_iterations_per_second: Engine iterations per second must be greater than 0.
+   At: core/engine.cpp:41.
+free(): invalid pointer
