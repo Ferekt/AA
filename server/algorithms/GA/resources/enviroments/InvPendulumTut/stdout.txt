@@ -1,0 +1,10 @@
+Godot Engine v3.2.stable.custom_build - https://godotengine.org
+OpenGL ES 2.0 Renderer: Mesa Intel(R) UHD Graphics 630 (CFL GT2)
+ 
+Shared memory handle found:--handle:environment
+Found:agent_action
+Found:env_action
+Found:reward
+Found:observation
+Found:done
+Running as OpenAIGym environment
