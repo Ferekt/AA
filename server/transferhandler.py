@@ -53,5 +53,5 @@ class TransferHandler():
 	def upload(self, name, path,ftps):
 		print("STOR", name , path)
 		size=os.path.getsize(path)
-		with tqdm(unit = 'b', unit_scale = True, leave = False, miniters = 1, desc = 'Uploading......', total = size) as tqdm_instance:
-				ftps.storbinary('STOR '+name,open(path,'rb'),1024, callback = lambda sent: tqdm_instance.update(len(sent)))
+		with tqdm(mininterval = 1 , unit = 'b', unit_scale = True, leave = False, miniters = 1, desc = 'Uploading......', total = size) as tqdm_instance:
+				ftps.storbinary('STOR '+name,open(path,'rb'),size, callback = lambda sent: tqdm_instance.update(len(sent)))

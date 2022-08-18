@@ -16,7 +16,7 @@ class Control():
 		self.task = "WAIT"
 
 		self.transferhandler=transferhandler.TransferHandler(self)
-		self.Server = server.SocketServer(self, '192.168.0.186', 53000)
+		self.Server = server.SocketServer(self,'localhost' , 53000)
 		self.Algorithm = None
 
 		self.algorithm_name = None
