@@ -1,3 +1,4 @@
+from hashlib import new
 import socket
 import pickle
 from message import *
@@ -13,11 +14,12 @@ SEPARATOR = "<SEPARATOR>"
 class Client():
 	def __init__(self):
 		self.ClientSocket = socket.socket()
-		self.host = '192.168.0.143'
+		self.host = 'localhost'
 		self.port = 53000
 		self.Algorithm = None
 		self.algorithm_name = None
 		self.ftpS=ftpServer.ftpServer()
+		self.ftpS.start_ftp()
 
 	def sendData(self, data):
 		self.ClientSocket.send(pickle.dumps(data))
@@ -96,16 +98,7 @@ class Client():
 
 			elif dcmd =="path":
 				cmd,ctr= "path", os.path.dirname(os.path.abspath(__file__))
-			
-			elif dcmd == "Turn_on":
-				if self.ftpS.start_ftp():
-					cmd,ctr="Done",None
-
-			elif dcmd == "Turn_off":
-				self.ftpS.server.close_when_done()
-
-
-				
+	
 			else:
 				print("Invalid command receieved")
 				print(dcmd)
@@ -119,7 +112,8 @@ class Client():
 			except:
 				print("connection lost in sending")
 				break
-
+		
+		self.ftpS.thread_run = False
 		print("shutting down")
 		self.ClientSocket.close()
 

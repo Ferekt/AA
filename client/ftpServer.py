@@ -11,7 +11,7 @@ class ftpServer():
         self.address = ("0.0.0.0",21)
         self.server = servers.FTPServer(self.address, self.handler)
         self.server.max_cons_per_ip=5
-        self.t1=threading.Thread(target=self.ftp_serve,daemon=True)
+        self.t1= threading.Thread(target=self.ftp_serve,daemon=True)
    
     def ftp_serve(self):
         self.server.serve_forever()

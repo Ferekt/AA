@@ -1,6 +1,9 @@
 from hashlib import new
+from http import client
 import importlib
 from multiprocessing.connection import wait
+from operator import contains
+from time import sleep
 import numpy as np
 from algorithms.GA.resources.algorithm import Algorithm
 import saves as s
@@ -14,9 +17,10 @@ class Control():
 		self.populationTracker = None
 		self.finishTracker = None
 		self.task = "WAIT"
+		self.client_queues =[]
 
 		self.transferhandler=transferhandler.TransferHandler(self)
-		self.Server = server.SocketServer(self,'192.168.0.143' , 53000)
+		self.Server = server.SocketServer(self,'localhost' , 53000)
 		self.Algorithm = None
 
 		self.algorithm_name = None
@@ -88,8 +92,9 @@ class Control():
 			pass
 
 		self.task = "WAIT"
-
-	def evolution(self, number_of_epochs):
+  
+  
+	def send_to_clients(self):
 		if self.experiment_name:
 			self.set_task("SEND")
 			for client in self.Server.clients:
@@ -100,16 +105,43 @@ class Control():
 			self.experiment_changed = False
 			self.set_task("STOP")
 			allLost = False
+		else:
+			print("set up experiment first!")
 
+	def evolution(self, number_of_epochs):
+		
 			for i in range(number_of_epochs):
-				print(i)
-				self.set_task("EVOLVE")
 				self.Algorithm.server_evolve()
 				self.populationTracker = np.ones(len(self.Algorithm.population), dtype=bool)
 				self.finishTracker = np.zeros(len(self.Algorithm.population), dtype=bool)
 				self.Algorithm.epochs +=1
-		else:
-			print("set up experiment first!")
+			for i in range(len(self.Server.clients)):
+				self.Server.clients[i].id=i
+				client_queue = []
+				self.client_queues.append(client_queue)
+			rounds=0 
+			while contains(self.populationTracker, True) and rounds < 5:
+				for i in range(len(self.client_queues)):
+					for j in range(len(self.populationTracker)):
+						if self.populationTracker[j] :
+							self.client_queues[i].append(j)
+							self.populationTracker[j]=False
+							break
+				rounds+=1
+    
+			self.set_task("EVOLVE")
+			while contains(self.populationTracker, True):
+				for i in range(len(self.client_queues)):
+					if len(self.client_queues[i])<5:
+						for j in range(len(self.populationTracker)):
+							if self.populationTracker[j] :
+								self.client_queues[i].append(j)
+								self.populationTracker[j]=False
+								break
+			while contains (self.finishTracker, False) :
+				is_finished=False
+			self.printmenu()
+        
 
 	def printmenu(self):
 		generation = None
@@ -153,7 +185,7 @@ if __name__ == "__main__":
 	
 	while True:
 		Server.printmenu()
-		choice = input("choose an action by typing its character in parenthesys:\n(i)mport/(e)volve/(s)ave/(l)oad/(q)uickload/(c)reate/(d)isconnect/e(x)it  :\n")
+		choice = input("choose an action by typing its character in parenthesys:\n(i)mport/(e)volve/sendto(h)ost/(s)ave/(l)oad/(q)uickload/(c)reate/(d)isconnect/e(x)it  :\n")
 		
 		if choice == "i":
 			finished = False
@@ -175,7 +207,10 @@ if __name__ == "__main__":
 		elif choice == "q":
 			Server.import_algorithm("GA")
 			Server.load_experiment("Feri","0.gen")
-
+		
+		elif choice == "h":
+			Server.send_to_clients()
+   
 		elif choice == "e":
 			good_input = False
 			epoch = None

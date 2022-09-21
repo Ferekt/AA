@@ -1,3 +1,4 @@
+from re import I
 import threading
 import os
 import pickle
@@ -20,6 +21,7 @@ class ClientService(threading.Thread):
 		self.daemon = True
 		self.is_ready = False
 		self.is_connected = True
+		self.id=None
 
 	def print_add(self, *args):
 		print(self.address[1],*args)
@@ -99,6 +101,7 @@ class ClientService(threading.Thread):
 		self.is_connected = False
 
 	def evolution_step(self):
+		self.is_ready = True
 		dcmd = None
 		dctr = None
 		cmd = None
@@ -108,16 +111,14 @@ class ClientService(threading.Thread):
 
 		while not all(self.ctrl.finishTracker):
 			if not individual:
-				for i in range(len(self.ctrl.Algorithm.population)):
-					if self.ctrl.populationTracker[i]:
-						self.ctrl.populationTracker[i] = False
-						individual = self.ctrl.Algorithm.population[i]
-					if individual:
-						idx = i
-						individual.score = 0
-						cmd = "calculate"
-						ctr = [individual]
-						break
+				if len(self.ctrl.client_queues[self.id])>0:
+						individual = self.ctrl.Algorithm.population[self.ctrl.client_queues[self.id][0]]
+				if individual:
+					idx = self.ctrl.client_queues[self.id][0]
+					individual.score = 0
+					cmd = "calculate"
+					ctr = [individual]
+
 			if not individual:
 				cmd = "wait"
 				
@@ -137,21 +138,26 @@ class ClientService(threading.Thread):
 				break
 
 			if dcmd == "result":
-				self.print_add("Score: ", dctr)
+				print(str(idx)+" Score: " + str(dctr))
 				individual.score = dctr
 				self.ctrl.finishTracker[idx] = True 
 				individual = None
 				cmd = None
 				ctr = None
+				self.ctrl.client_queues[self.id].pop(0)
 
 			elif dcmd == "wait":
 				self.print_add("Waitiing...")
 				break
 
+			elif dcmd == "import_done":
+				self.print_add("import done")
+       
 			else:
+				print(dcmd)
 				self.print_add("Invalid command receieved")
 				response = Message("print", "Command not found")
-
+    
 		if idx != None:
 			if not self.ctrl.finishTracker[idx] and not self.ctrl.populationTracker[idx]:
 				self.ctrl.populationTracker[idx] = True
@@ -168,20 +174,13 @@ class ClientService(threading.Thread):
 					self.sendData(Message("import",None))
 					dcmd, _ = self.getData()	
 					self.evolution_step()
-					self.is_ready = True
+
 
 				elif self.ctrl.task == "SEND":
 					if self.ctrl.experiment_changed:
 						self.algorithm_updated = False
-					if not self.algorithm_updated:
-						self.sendData(Message("Turn_on",None))
-						while True:
-							dcmd, dctr = self.getData()
-							if dcmd=="Done":
-								break
 					self.is_ready = True
 				elif self.ctrl.task == "STOP":
-					self.sendData(Message("Turn_off",None))
 					self.is_ready = True
 
 		self.connection.close()
