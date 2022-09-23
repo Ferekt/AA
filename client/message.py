@@ -1,6 +1,3 @@
-
-
-
 class Message():
 	def __init__(self, command = "", container = None):
 		self.__command = command

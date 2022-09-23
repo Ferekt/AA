@@ -1,3 +1,4 @@
+from multiprocessing.connection import wait
 from re import I
 import threading
 import os
@@ -24,7 +25,7 @@ class ClientService(threading.Thread):
 		self.id=None
 
 	def print_add(self, *args):
-		print(self.address[1],*args)
+		print(self.id,*args)
 	
 	def getPath(self):
 		self.sendData(Message("path",None))
@@ -108,9 +109,8 @@ class ClientService(threading.Thread):
 		ctr = None
 		individual = None
 		idx = None
-
 		while not all(self.ctrl.finishTracker):
-			if not individual:
+			if not individual and self.ctrl.is_updated:
 				if len(self.ctrl.client_queues[self.id])>0:
 						individual = self.ctrl.Algorithm.population[self.ctrl.client_queues[self.id][0]]
 				if individual:
@@ -138,7 +138,7 @@ class ClientService(threading.Thread):
 				break
 
 			if dcmd == "result":
-				print(str(idx)+" Score: " + str(dctr))
+				print(str(self.id)+" "+str(idx)+" Score: " + str(dctr)+"\n")
 				individual.score = dctr
 				self.ctrl.finishTracker[idx] = True 
 				individual = None
@@ -147,11 +147,11 @@ class ClientService(threading.Thread):
 				self.ctrl.client_queues[self.id].pop(0)
 
 			elif dcmd == "wait":
-				self.print_add("Waitiing...")
-				break
+				self.print_add("Waiting...\n")
 
 			elif dcmd == "import_done":
-				self.print_add("import done")
+				self.print_add("import done\n")
+				self.algorithm_updated=True
        
 			else:
 				print(dcmd)

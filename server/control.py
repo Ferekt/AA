@@ -18,9 +18,10 @@ class Control():
 		self.finishTracker = None
 		self.task = "WAIT"
 		self.client_queues =[]
+		self.is_updated=False
 
 		self.transferhandler=transferhandler.TransferHandler(self)
-		self.Server = server.SocketServer(self,'localhost' , 53000)
+		self.Server = server.SocketServer(self, '192.168.0.143' , 53000)
 		self.Algorithm = None
 
 		self.algorithm_name = None
@@ -111,37 +112,42 @@ class Control():
 	def evolution(self, number_of_epochs):
 		
 			for i in range(number_of_epochs):
+				print("Epoch: "+str(i))
 				self.Algorithm.server_evolve()
 				self.populationTracker = np.ones(len(self.Algorithm.population), dtype=bool)
 				self.finishTracker = np.zeros(len(self.Algorithm.population), dtype=bool)
 				self.Algorithm.epochs +=1
-			for i in range(len(self.Server.clients)):
-				self.Server.clients[i].id=i
-				client_queue = []
-				self.client_queues.append(client_queue)
-			rounds=0 
-			while contains(self.populationTracker, True) and rounds < 5:
-				for i in range(len(self.client_queues)):
-					for j in range(len(self.populationTracker)):
-						if self.populationTracker[j] :
-							self.client_queues[i].append(j)
-							self.populationTracker[j]=False
-							break
-				rounds+=1
-    
-			self.set_task("EVOLVE")
-			while contains(self.populationTracker, True):
-				for i in range(len(self.client_queues)):
-					if len(self.client_queues[i])<5:
+				for i in range(len(self.Server.clients)):
+					self.Server.clients[i].id=i
+					client_queue = []
+					self.client_queues.append(client_queue)
+				rounds=0 
+				while contains(self.populationTracker, True) and rounds < 5:
+					for i in range(len(self.client_queues)):
 						for j in range(len(self.populationTracker)):
 							if self.populationTracker[j] :
 								self.client_queues[i].append(j)
 								self.populationTracker[j]=False
 								break
-			while contains (self.finishTracker, False) :
-				is_finished=False
-			self.client_queues.clear()
+					rounds+=1
+		
+				self.set_task("EVOLVE")
+				while not all([c.algorithm_updated for c in self.Server.clients]):
+					self.is_updated=False
+				self.is_updated=True
+				while contains(self.populationTracker, True):
+					for i in range(len(self.client_queues)):
+						if len(self.client_queues[i])<5:
+							for j in range(len(self.populationTracker)):
+								if self.populationTracker[j] :
+									self.client_queues[i].append(j)
+									self.populationTracker[j]=False
+									break
+				while contains (self.finishTracker, False) :
+					is_finished=False
+				self.client_queues.clear()
 			self.printmenu()
+			self.is_updated=False
         
 
 	def printmenu(self):

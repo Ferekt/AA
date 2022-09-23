@@ -17,6 +17,9 @@ class TransferHandler():
 
 		ftps = ftplib.FTP(host)
 		ftps.login(user=self.user,passwd=self.password)
+		if not 'algorithms' in ftps.nlst():
+			print("MKD",'algorithms')
+			ftps.mkd('algorithms')
 		ftps.cwd('algorithms')
 		if not self.ctrl.algorithm_name in ftps.nlst():
 			print("MKD",self.ctrl.algorithm_name)
