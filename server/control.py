@@ -140,6 +140,7 @@ class Control():
 								break
 			while contains (self.finishTracker, False) :
 				is_finished=False
+			self.client_queues.clear()
 			self.printmenu()
         
 
