@@ -208,6 +208,7 @@ class ClientService(threading.Thread):
 
 
 				elif self.ctrl.task == "SEND":	
+					self.sendData(Message("name",self.ctrl.algorithm_name))
 					self.is_ready = True
 					self.transfer_to_clients()
 				elif self.ctrl.task == "STOP":

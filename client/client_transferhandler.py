@@ -21,11 +21,11 @@ class ClientTransferHandler():
 			print("MKD",'algorithms')
 			ftps.mkd('algorithms')
 		ftps.cwd('algorithms')
-		if not self.ctrl.algorithm_name in ftps.nlst():
-			print("MKD",self.ctrl.algorithm_name)
-			ftps.mkd(self.ctrl.algorithm_name)
-			print("CWD",self.ctrl.algorithm_name)
-			ftps.cwd(self.ctrl.algorithm_name)
+		if not self.client_ctrl.algorithm_name in ftps.nlst():
+			print("MKD",self.client_ctrl.algorithm_name)
+			ftps.mkd(self.client_ctrl.algorithm_name)
+			print("CWD",self.client_ctrl.algorithm_name)
+			ftps.cwd(self.client_ctrl.algorithm_name)
 			if not "resources" in ftps.nlst():
 				print("MKD", "resources")
 				ftps.mkd("resources")
