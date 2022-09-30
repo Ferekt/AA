@@ -23,6 +23,7 @@ class ClientService(threading.Thread):
 		self.is_ready = False
 		self.is_connected = True
 		self.id=None
+		self.can_transfer= False
 
 	def print_add(self, *args):
 		print(self.id,*args)
@@ -160,11 +161,36 @@ class ClientService(threading.Thread):
     
 		if idx != None:
 			if not self.ctrl.finishTracker[idx] and not self.ctrl.populationTracker[idx]:
-				self.ctrl.populationTracker[idx] = True
 				self.print_add("did not finish, rolling back...")
 
 
+	def transfer_to_clients(self):
+		if self.can_transfer:
+			for i in self.ctrl.clients_ready:
+				if not (i or self.ctrl.clients_transferring[i]):
+					self.ctrl.clients_transferring[i]=True
+					if self.transfer(self.ctrl.Server.clients[i]):
+						self.ctrl.clients_ready[i]=True
 
+     
+	def transfer(self,client):
+		self.sendData(Message("transfer",str(client.address[0])))
+		is_done=False
+		while True:	
+			try:
+				dcmd,dctr=self.getData()
+			except:
+				print("couldnt get")
+				self.is_connected = False
+				break
+			if dcmd=="transfer done":
+				is_done=True
+				break	
+		return is_done
+			
+				
+
+   
 	def run(self):
 		while self.is_connected:
 
@@ -176,9 +202,10 @@ class ClientService(threading.Thread):
 					self.evolution_step()
 
 
-				elif self.ctrl.task == "SEND":
+				elif self.ctrl.task == "SEND":	
 					if self.ctrl.experiment_changed:
 						self.algorithm_updated = False
+					self.transfer_to_clients()
 					self.is_ready = True
 				elif self.ctrl.task == "STOP":
 					self.is_ready = True

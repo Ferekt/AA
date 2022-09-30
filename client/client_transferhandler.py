@@ -2,16 +2,15 @@ import os
 import ftplib
 from tqdm import tqdm
 
-class TransferHandler():
-	def __init__(self,ctrl):
+class ClientTransferHandler():
+	def __init__(self,client_ctrl):
 		self.user= "user"
 		self.password="kek"
-		self.ctrl=ctrl
 	
-	def transfer(self,client):
+	def transfer(self,client_address):
 
-		algorithmDir=str(os.path.join(os.path.dirname(os.path.abspath(__file__)),"algorithms",str(self.ctrl.algorithm_name),"resources"))
-		host=str(client.address[0])
+		algorithmDir=str(os.path.join(os.path.dirname(os.path.abspath(__file__)),"algorithms",str(self.client_ctrl.algorithm_name),"resources"))
+		host=str(client_address)
 		user="user"
 		password="password"
 

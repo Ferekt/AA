@@ -6,6 +6,7 @@ import importlib
 import saves as s
 import ftpServer
 import os
+import client_transferhandler
 
 
 BUFFER_SIZE = 1024*4
@@ -20,6 +21,7 @@ class Client():
 		self.algorithm_name = None
 		self.ftpS=ftpServer.ftpServer()
 		self.ftpS.start_ftp()
+		self.clienttransferhandler=client_transferhandler.ClientTransferHandler(self)
 
 	def sendData(self, data):
 		self.ClientSocket.send(pickle.dumps(data))
@@ -62,7 +64,7 @@ class Client():
 			except:
 				print("connection lost")
 				break
-			print("got:",dcmd, dctr)
+			#print("got:",dcmd, dctr)
 			cmd, ctr = None, None
 
 			
@@ -98,13 +100,17 @@ class Client():
 
 			elif dcmd =="path":
 				cmd,ctr= "path", os.path.dirname(os.path.abspath(__file__))
-	
+
+			elif dcmd == "transfer":
+				self.clienttransferhandler.transfer(dctr)
+				cmd,ctr = "transfer done", None
 			else:
 				print("Invalid command receieved")
 				print(dcmd)
 				print(dctr)
 				cmd, ctr = "print", "Command not found"
 				break
+			
 
 			print("sent:",cmd, ctr)
 			try:

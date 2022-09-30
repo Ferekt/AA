@@ -6,6 +6,7 @@ from operator import contains
 from time import sleep
 import numpy as np
 from algorithms.GA.resources.algorithm import Algorithm
+from clienthandler import ClientService
 import saves as s
 import server
 import torch
@@ -18,6 +19,8 @@ class Control():
 		self.finishTracker = None
 		self.task = "WAIT"
 		self.client_queues =[]
+		self.clients_ready=[]
+		self.clients_transferring=[]
 		self.is_updated=False
 
 		self.transferhandler=transferhandler.TransferHandler(self)
@@ -99,10 +102,16 @@ class Control():
 		if self.experiment_name:
 			self.set_task("SEND")
 			for client in self.Server.clients:
-				if not client.algorithm_updated:
-					while not client.is_ready:
-						pass
-					self.transferhandler.transfer(client)
+				self.clients_ready.append(False)
+				self.clients_transferring(False)
+			while not all(self.clients_ready,True):
+				for i in range(len(self.Server.clients)):
+					if not (self.clients_ready[i] or self.clients_transferring[i]):
+						self.clients_transferring[i]=True
+						self.transferhandler.transfer(self.Server.clients[i])
+						self.clients_ready[i]=True
+						self.Server.clients[i].can_transfer=True
+
 			self.experiment_changed = False
 			self.set_task("STOP")
 			allLost = False
@@ -144,7 +153,12 @@ class Control():
 									self.populationTracker[j]=False
 									break
 				while contains (self.finishTracker, False) :
-					is_finished=False
+					for c in self.client_queues:
+						if len(c) == 0:
+							for c2 in self.client_queues: 
+								if len(c2)>1 or (len(c2)==1 and not contains([k.id==self.client_queues.index(c2) for k in self.Server.clients],True)) :
+									c.append(c2[len(c2)-1])
+									c2.pop(len(c2)-1)
 				self.client_queues.clear()
 			self.printmenu()
 			self.is_updated=False
