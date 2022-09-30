@@ -100,18 +100,22 @@ class Control():
   
 	def send_to_clients(self):
 		if self.experiment_name:
-			self.set_task("SEND")
 			for client in self.Server.clients:
 				self.clients_ready.append(False)
-				self.clients_transferring(False)
-			while not all(self.clients_ready,True):
+				self.clients_transferring.append(False)
+			self.set_task("SEND")
+			while contains(self.clients_ready,False):
 				for i in range(len(self.Server.clients)):
-					if not (self.clients_ready[i] or self.clients_transferring[i]):
+					if not (self.clients_ready[i] or self.clients_transferring[i]) and i<1:
 						self.clients_transferring[i]=True
 						self.transferhandler.transfer(self.Server.clients[i])
-						self.clients_ready[i]=True
+						self.clients_ready[i]=True	
+						print(self.clients_ready)
+						print(self.clients_transferring)
 						self.Server.clients[i].can_transfer=True
-
+						print("changed")
+			self.clients_ready.clear()
+			self.clients_transferring.clear()
 			self.experiment_changed = False
 			self.set_task("STOP")
 			allLost = False

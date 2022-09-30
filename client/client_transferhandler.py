@@ -6,6 +6,7 @@ class ClientTransferHandler():
 	def __init__(self,client_ctrl):
 		self.user= "user"
 		self.password="kek"
+		self.client_ctrl = client_ctrl
 	
 	def transfer(self,client_address):
 

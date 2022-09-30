@@ -1,4 +1,5 @@
 from multiprocessing.connection import wait
+from operator import contains
 from re import I
 import threading
 import os
@@ -165,12 +166,14 @@ class ClientService(threading.Thread):
 
 
 	def transfer_to_clients(self):
-		if self.can_transfer:
-			for i in self.ctrl.clients_ready:
-				if not (i or self.ctrl.clients_transferring[i]):
-					self.ctrl.clients_transferring[i]=True
-					if self.transfer(self.ctrl.Server.clients[i]):
-						self.ctrl.clients_ready[i]=True
+		while contains(self.ctrl.clients_ready,False):
+			if self.can_transfer:
+				for i in range(len(self.ctrl.clients_ready)):
+					if not (self.ctrl.clients_ready[i] or self.ctrl.clients_transferring[i]):
+						print("we in")
+						self.ctrl.clients_transferring[i]=True
+						if self.transfer(self.ctrl.Server.clients[i]):
+							self.ctrl.clients_ready[i]=True
 
      
 	def transfer(self,client):
@@ -194,7 +197,9 @@ class ClientService(threading.Thread):
 	def run(self):
 		while self.is_connected:
 
-			if not self.is_ready:	
+			if not self.is_ready:
+				if not self.ctrl.task=="WAIT":
+					print(self.ctrl.task)
 				if self.ctrl.task == "EVOLVE":
 					self.sendData(Message("name",self.ctrl.algorithm_name))
 					self.sendData(Message("import",None))
@@ -203,10 +208,8 @@ class ClientService(threading.Thread):
 
 
 				elif self.ctrl.task == "SEND":	
-					if self.ctrl.experiment_changed:
-						self.algorithm_updated = False
-					self.transfer_to_clients()
 					self.is_ready = True
+					self.transfer_to_clients()
 				elif self.ctrl.task == "STOP":
 					self.is_ready = True
 
