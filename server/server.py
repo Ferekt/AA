@@ -8,7 +8,7 @@ class SocketServer():
 		self.ServerSocket = socket.socket()
 		self.host = ip_address
 		self.port = port
-		self.maxClientCount = 3
+		self.maxClientCount = 10
 		self.ctrl = ctrl
 
 

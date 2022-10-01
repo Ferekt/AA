@@ -149,8 +149,8 @@ class ClientService(threading.Thread):
 				self.ctrl.client_queues[self.id].pop(0)
 
 			elif dcmd == "wait":
-				self.print_add("Waiting...\n")
-
+				#self.print_add("Waiting...\n")
+				pass
 			elif dcmd == "import_done":
 				self.print_add("import done\n")
 				self.algorithm_updated=True
@@ -197,9 +197,7 @@ class ClientService(threading.Thread):
 	def run(self):
 		while self.is_connected:
 
-			if not self.is_ready:
-				if not self.ctrl.task=="WAIT":
-					print(self.ctrl.task)
+			if not self.is_ready:	
 				if self.ctrl.task == "EVOLVE":
 					self.sendData(Message("name",self.ctrl.algorithm_name))
 					self.sendData(Message("import",None))

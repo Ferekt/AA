@@ -24,7 +24,7 @@ class Control():
 		self.is_updated=False
 
 		self.transferhandler=transferhandler.TransferHandler(self)
-		self.Server = server.SocketServer(self, '192.168.0.143' , 53000)
+		self.Server = server.SocketServer(self, '10.0.5.1' , 53000)
 		self.Algorithm = None
 
 		self.algorithm_name = None
@@ -125,9 +125,13 @@ class Control():
 		
 			for i in range(number_of_epochs):
 				print("Epoch: "+str(i))
+				print("pop length: "+str(len(self.Algorithm.population)))
 				self.Algorithm.server_evolve()
 				self.populationTracker = np.ones(len(self.Algorithm.population), dtype=bool)
 				self.finishTracker = np.zeros(len(self.Algorithm.population), dtype=bool)
+				print("pop length: "+str(len(self.Algorithm.population)))
+				print("poptracker length: "+str(len(self.populationTracker)))
+				print("finishtracker lenght: "+str(len(self.finishTracker)))
 				self.Algorithm.epochs +=1
 				for i in range(len(self.Server.clients)):
 					self.Server.clients[i].id=i
@@ -159,10 +163,16 @@ class Control():
 					for c in self.client_queues:
 						if len(c) == 0:
 							for c2 in self.client_queues: 
-								if len(c2)>1 or (len(c2)==1 and not contains([k.id==self.client_queues.index(c2) for k in self.Server.clients],True)) :
-									c.append(c2[len(c2)-1])
-									c2.pop(len(c2)-1)
+								if not contains([k.id==self.client_queues.index(c2) for k in self.Server.clients],True ):
+									try: 
+										c.append(c2[len(c2)-1])
+										c2.pop(len(c2)-1)
+									except:
+										print("stackwarning ",c2)
+										self.finishTracker
+				print([i.score==0 for i in self.Algorithm.population])
 				self.client_queues.clear()
+				print("cleared")
 			self.printmenu()
 			self.is_updated=False
         
