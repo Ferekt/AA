@@ -15,7 +15,7 @@ SEPARATOR = "<SEPARATOR>"
 class Client():
 	def __init__(self):
 		self.ClientSocket = socket.socket()
-		self.host = '192.168.0.143'
+		self.host = '10.0.5.1'
 		self.port = 53000
 		self.Algorithm = None
 		self.algorithm_name = None
