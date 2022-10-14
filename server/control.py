@@ -19,8 +19,9 @@ class Control():
 		self.finishTracker = None
 		self.task = "WAIT"
 		self.client_queues =[]
-		self.clients_ready=[]
+		self.ready_clients=[]
 		self.clients_transferring=[]
+		self.done_clients=[]
 		self.is_updated=False
 
 		self.transferhandler=transferhandler.TransferHandler(self)
@@ -101,18 +102,36 @@ class Control():
 	def send_to_clients(self):
 		if self.experiment_name:
 			for client in self.Server.clients:
-				self.clients_ready.append(False)
+				self.ready_clients.append(True)
 				self.clients_transferring.append(False)
+				self.done_clients.append(False)
 			self.set_task("SEND")
-			while contains(self.clients_ready,False):
+			while contains(self.done_clients,False):
 				for i in range(len(self.Server.clients)):
-					if not (self.clients_ready[i] or self.clients_transferring[i]):
+					if not (self.clients_transferring[i] or self.done_clients[i]):
+						self.ready_clients[i]= False
+						self.clients_transferring[i]=True
+						self.transferhandler.transfer(self.Server.clients[i])
+						self.done_clients[i]=True
+						self.clients_transferring[i]=False
+						self.ready_clients[i]=True
+				for done_client in range(len(self.done_clients)):
+					if self.ready_clients[done_client]:
+						for i in range(len(self.Server.clients)):
+							if not self.clients_transferring[i] or self.done_clients[i]:
+								self.ready_clients[done_client]=False
+								self.ready_clients[i]=False
+								self.clients_transferring[i] = True
+								self.Server.clients[done_client].transfer(self.Server.clients[i])
+
+					"""if not self.clients_ready[i]:
 						self.clients_transferring[i]=True
 						self.transferhandler.transfer(self.Server.clients[i])
 						self.clients_ready[i]=True	
 						print(self.clients_ready)
 						print(self.clients_transferring)
 						self.Server.clients[i].can_transfer=True
+						self.clients_transferring[i]=False"""
 			self.clients_ready.clear()
 			self.clients_transferring.clear()
 			self.experiment_changed = False
