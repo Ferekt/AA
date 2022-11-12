@@ -8,10 +8,10 @@ class TransferHandler():
 		self.password="kek"
 		self.ctrl=ctrl
 	
-	def transfer(self,client):
+	def transfer(self,address):
 
 		algorithmDir=str(os.path.join(os.path.dirname(os.path.abspath(__file__)),"algorithms",str(self.ctrl.algorithm_name),"resources"))
-		host=str(client.address[0])
+		host=address
 		user="user"
 		password="password"
 

@@ -15,7 +15,7 @@ SEPARATOR = "<SEPARATOR>"
 class Client():
 	def __init__(self):
 		self.ClientSocket = socket.socket()
-		self.host = '192.168.0.143'
+		self.host = '192.168.0.144'
 		self.port = 53000
 		self.Algorithm = None
 		self.algorithm_name = None
@@ -64,7 +64,6 @@ class Client():
 			except:
 				print("connection lost")
 				break
-			#print("got:",dcmd, dctr)
 			cmd, ctr = None, None
 
 			
@@ -103,7 +102,7 @@ class Client():
 
 			elif dcmd == "transfer":
 				self.clienttransferhandler.transfer(dctr)
-				cmd,ctr = "transfer done", None
+				cmd,ctr = "transfer done", dctr
 			else:
 				print("Invalid command receieved")
 				print(dcmd)
@@ -112,7 +111,6 @@ class Client():
 				break
 			
 
-			print("sent:",cmd, ctr)
 			try:
 				self.sendData(Message(cmd, ctr))
 			except:
@@ -128,6 +126,8 @@ class Client():
 
 if __name__ == "__main__":
 	client = Client()
-	client.run()
+	while True:
+		client.ClientSocket=socket.socket()
+		client.run()
 
 

@@ -5,12 +5,9 @@ from multiprocessing.connection import wait
 from operator import contains
 from time import sleep
 import numpy as np
-from algorithms.GA.resources.algorithm import Algorithm
-from clienthandler import ClientService
 import saves as s
 import server
 import torch
-import transferhandler
 
 
 class Control():
@@ -23,9 +20,7 @@ class Control():
 		self.clients_transferring=[]
 		self.done_clients=[]
 		self.is_updated=False
-
-		self.transferhandler=transferhandler.TransferHandler(self)
-		self.Server = server.SocketServer(self, '10.0.5.1' , 53000)
+		self.Server = server.SocketServer(self, '10.0.6.1' , 53000)
 		self.Algorithm = None
 
 		self.algorithm_name = None
@@ -100,14 +95,26 @@ class Control():
   
   
 	def send_to_clients(self):
-		if self.experiment_name:
+		self.Server.clienthandler.handle("SEND",None,Server)
+		"""if self.experiment_name:
+			for i in range(len(self.Server.writable)):
+					self.Server.clients[i].id=i
 			for client in self.Server.clients:
 				self.ready_clients.append(True)
 				self.clients_transferring.append(False)
 				self.done_clients.append(False)
 			self.set_task("SEND")
 			while contains(self.done_clients,False):
-				for i in range(len(self.Server.clients)):
+				if not self.done_clients[0]:
+					self.ready_clients[0]= False
+					self.clients_transferring[0]=True
+					self.transferhandler.transfer(self.Server.clients[0])
+					self.done_clients[0]=True
+					self.clients_transferring[0]=False
+					self.ready_clients[0]=True
+     
+     
+			for i in range(len(self.Server.clients)):
 					if not (self.clients_transferring[i] or self.done_clients[i]):
 						self.ready_clients[i]= False
 						self.clients_transferring[i]=True
@@ -115,34 +122,54 @@ class Control():
 						self.done_clients[i]=True
 						self.clients_transferring[i]=False
 						self.ready_clients[i]=True
-				for done_client in range(len(self.done_clients)):
-					if self.ready_clients[done_client]:
+						break
+      
+      
+			for j in range(len(self.done_clients)):
+					print(self.ready_clients, self.done_clients)
+					if self.ready_clients[j] and self.done_clients[j]:
 						for i in range(len(self.Server.clients)):
-							if not self.clients_transferring[i] or self.done_clients[i]:
-								self.ready_clients[done_client]=False
+							if not (self.clients_transferring[i] or self.done_clients[i]):
+								print("we in")
+								self.ready_clients[j]=False
 								self.ready_clients[i]=False
 								self.clients_transferring[i] = True
-								self.Server.clients[done_client].transfer(self.Server.clients[i])
-
-					"""if not self.clients_ready[i]:
+								self.Server.clients[j].can_transfer=True
+								self.Server.clients[j].transfer_target=self.Server.clients[i]
+								break
+        
+        
+				if not self.clients_ready[i]:
 						self.clients_transferring[i]=True
 						self.transferhandler.transfer(self.Server.clients[i])
 						self.clients_ready[i]=True	
 						print(self.clients_ready)
 						print(self.clients_transferring)
 						self.Server.clients[i].can_transfer=True
-						self.clients_transferring[i]=False"""
-			self.clients_ready.clear()
-			self.clients_transferring.clear()
-			self.experiment_changed = False
+						self.clients_transferring[i]=False
+      
+      
+		for client in self.Server.clients:
+				client.can_transfer=False
+				client.break_sending=True
+			print("siker")
 			self.set_task("STOP")
+			print("1")
+			self.ready_clients.clear()
+			print("2")
+			self.clients_transferring.clear()
+			print("3")
+			self.done_clients.clear()
+			print("4")
+			self.experiment_changed = False
+			#self.set_task("STOP")
 			allLost = False
 		else:
-			print("set up experiment first!")
+			print("set up experiment first!")"""
 
 	def evolution(self, number_of_epochs):
-		
-			for i in range(number_of_epochs):
+		self.Server.clienthandler.handle("EVOLVE",number_of_epochs,Server)
+		"""for i in range(number_of_epochs):
 				print("Epoch: "+str(i))
 				print("pop length: "+str(len(self.Algorithm.population)))
 				self.Algorithm.server_evolve()
@@ -152,8 +179,7 @@ class Control():
 				print("poptracker length: "+str(len(self.populationTracker)))
 				print("finishtracker lenght: "+str(len(self.finishTracker)))
 				self.Algorithm.epochs +=1
-				for i in range(len(self.Server.clients)):
-					self.Server.clients[i].id=i
+				for i in range(len(self.Server.clienthandler.connections)):
 					client_queue = []
 					self.client_queues.append(client_queue)
 				rounds=0 
@@ -166,7 +192,6 @@ class Control():
 								break
 					rounds+=1
 		
-				self.set_task("EVOLVE")
 				while not all([c.algorithm_updated for c in self.Server.clients]):
 					self.is_updated=False
 				self.is_updated=True
@@ -193,7 +218,7 @@ class Control():
 				self.client_queues.clear()
 				print("cleared")
 			self.printmenu()
-			self.is_updated=False
+			self.is_updated=False"""
         
 
 	def printmenu(self):
@@ -207,9 +232,8 @@ class Control():
 	Generation: {}
 	Experiment: {}
 	clients {}
-		'''.format(self.Server.host,self.Server.port,len(self.Server.clients),self.Server.maxClientCount,self.algorithm_name,
-			generation, self.experiment_name, self.Server.clients))
-		print([c.is_alive() for c in self.Server.clients])
+		'''.format(self.Server.host,self.Server.port,len(self.Server.clienthandler.connections),self.Server.maxClientCount,self.algorithm_name,
+			generation, self.experiment_name, self.Server.readable))
 
 	def get_data(self):
 		epoch = None
@@ -239,7 +263,7 @@ if __name__ == "__main__":
 	while True:
 		Server.printmenu()
 		choice = input("choose an action by typing its character in parenthesys:\n(i)mport/(e)volve/sendto(h)ost/(s)ave/(l)oad/(q)uickload/(c)reate/(d)isconnect/e(x)it  :\n")
-		
+  
 		if choice == "i":
 			finished = False
 			if Server.algorithm_resources is not None:
@@ -263,6 +287,8 @@ if __name__ == "__main__":
 		
 		elif choice == "h":
 			Server.send_to_clients()
+			print("kint")
+
    
 		elif choice == "e":
 			good_input = False
