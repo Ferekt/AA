@@ -15,7 +15,7 @@ SEPARATOR = "<SEPARATOR>"
 class Client():
 	def __init__(self):
 		self.ClientSocket = socket.socket()
-		self.host = '192.168.0.143'
+		self.host = '192.168.0.144'
 		self.port = 53000
 		self.Algorithm = None
 		self.algorithm_name = None
@@ -29,21 +29,6 @@ class Client():
 	def getData(self):
 		data = pickle.loads(self.ClientSocket.recv(BUFFER_SIZE))
 		return data.command(), data.container()
-	
-	def getFile(self):
-		filename, filesize = self.getData()
-		print("receieving", filename, filesize)
-		
-		filesize = int(filesize)
-		with open(filename, "wb") as f:
-			while True:
-				bytes_read = self.ClientSocket.recv(BUFFER_SIZE)
-				if bytes_read[-3:] == b'eof':    
-					f.write(bytes_read[:-3])
-					break
-				f.write(bytes_read)		
-		print("file written" + filename)
-
 
 	def connect(self):
 		print('Waiting for connection')
@@ -64,7 +49,6 @@ class Client():
 			except:
 				print("connection lost")
 				break
-			#print("got:",dcmd, dctr)
 			cmd, ctr = None, None
 
 			
@@ -80,10 +64,6 @@ class Client():
 				else:
 					cmd = "name_writing_error"
 
-			elif dcmd == "file":
-				self.getFile()
-				cmd, ctr = "file_written", None
-
 			elif dcmd == "import":
 				self.Algorithm = importlib.import_module("algorithms."+self.algorithm_name+".resources.algorithm").Algorithm(size=0)
 				cmd, ctr = "import_done", None
@@ -98,12 +78,9 @@ class Client():
 				print("waiting...")
 				cmd, ctr = "wait", None
 
-			elif dcmd =="path":
-				cmd,ctr= "path", os.path.dirname(os.path.abspath(__file__))
-
 			elif dcmd == "transfer":
 				self.clienttransferhandler.transfer(dctr)
-				cmd,ctr = "transfer done", None
+				cmd,ctr = "transfer done", dctr
 			else:
 				print("Invalid command receieved")
 				print(dcmd)
@@ -112,7 +89,6 @@ class Client():
 				break
 			
 
-			print("sent:",cmd, ctr)
 			try:
 				self.sendData(Message(cmd, ctr))
 			except:
